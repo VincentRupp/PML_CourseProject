@@ -23,7 +23,7 @@ library(randomForest)
 ```
 
 ```r
-setwd("C:/Coursera/Data_Science/08_Practical_Machine_Learning")
+setwd("C:/Coursera/Data_Science/08_Practical_Machine_Learning/PML_CourseProject")
 set.seed(5)
 opts_chunk$set(echo=TRUE,results="show",fig.align="center",cache=TRUE)
 ```
@@ -62,7 +62,7 @@ new_windows <- training$new_window=='yes'
 keep <- rep(TRUE,dim(training)[2])
 
 #Set keep to FALSE when any of the column conditions are met
-#(There's more efficient code to achieve the result, but this is a one-shot project so cost-benefit favors leaving it as this hodgepodge of omits.)
+#(There's more efficient code to achieve the result, but this has the benefit of being really clear.)
 for (i in 1:length(names(training))) {
   if (sum(is.na(training[,i])) > 5000) {keep[i] <- FALSE}
   if (grepl("^kurtosis|skewness",names(training)[i])==TRUE) {keep[i] <- FALSE}
@@ -160,19 +160,12 @@ confusionMatrix(training$classe,predict(modFit,training))
 ```
 Accuracy is very similar to what was achieved on the 2000-row set. We expect the out-of-sample accuracy to be similar, assuming the test set was chosen randomly from the same population and this model doesn't overfit to the training set.   
 
-Now that I feel good about the method, I'll build a model based on the entire 19,216-row training set. Instead of 5-fold cross-validation, I'll use the bootstrap method and 25 iterations. (25 is the default, so I assume there's some research showing that's an optimal number.)  
-
-**Important Grading Note**  
-Creating the actual model is nearly three hours of runtime. I have knitr set up to cache results, but I stupidly ran the chunk instead of clicking "Knit HTML".  
-
-So the code below to do the three-hour runtime is commented out and I'm using the result from the smaller sample in its place. I already uploaded the automatically-graded files and got 20/20 so it does work and you can see the code for yourself. Hopefully you won't mind this shenanigan.  
-
+Now that I feel good about the method, I'll build a model based on the entire 19,216-row training set. Instead of 5-fold cross-validation, I'll use the bootstrap method and 25 iterations. (25 is the default, so I assume there's some research showing that's an optimal number.) 
 
 
 ```r
-#modFitFinal <- train(classe ~ .,data=trainingUse,method="rf",
-#                trControl=trainControl(method="boot",number=25))
-modFitFinal <- modFit   # =/
+modFitFinal <- train(classe ~ .,data=trainingUse,method="rf",
+                trControl=trainControl(method="boot",number=25))
 ```
 
 That takes almost three hours to run, so here's hoping it's worth it!  
@@ -187,35 +180,34 @@ confusionMatrix(training$classe,predict(modFitFinal,training))
 ## 
 ##           Reference
 ## Prediction    A    B    C    D    E
-##          A 5522   21   18    2   17
-##          B  260 3399   90   21   27
-##          C    9  101 3228   64   20
-##          D   29   20   77 3075   15
-##          E    7   14   43   33 3510
+##          A 5580    0    0    0    0
+##          B    0 3796    1    0    0
+##          C    0    0 3422    0    0
+##          D    0    0    1 3215    0
+##          E    0    0    0    0 3607
 ## 
 ## Overall Statistics
-##                                           
-##                Accuracy : 0.9547          
-##                  95% CI : (0.9517, 0.9576)
-##     No Information Rate : 0.297           
-##     P-Value [Acc > NIR] : < 2.2e-16       
-##                                           
-##                   Kappa : 0.9427          
-##  Mcnemar's Test P-Value : < 2.2e-16       
+##                                      
+##                Accuracy : 0.9999     
+##                  95% CI : (0.9996, 1)
+##     No Information Rate : 0.2844     
+##     P-Value [Acc > NIR] : < 2.2e-16  
+##                                      
+##                   Kappa : 0.9999     
+##  Mcnemar's Test P-Value : NA         
 ## 
 ## Statistics by Class:
 ## 
 ##                      Class: A Class: B Class: C Class: D Class: E
-## Sensitivity            0.9477   0.9561   0.9340   0.9624   0.9780
-## Specificity            0.9958   0.9752   0.9880   0.9914   0.9939
-## Pos Pred Value         0.9896   0.8952   0.9433   0.9562   0.9731
-## Neg Pred Value         0.9783   0.9901   0.9859   0.9927   0.9951
-## Prevalence             0.2970   0.1812   0.1761   0.1628   0.1829
-## Detection Rate         0.2814   0.1732   0.1645   0.1567   0.1789
+## Sensitivity            1.0000   1.0000   0.9994   1.0000   1.0000
+## Specificity            1.0000   0.9999   1.0000   0.9999   1.0000
+## Pos Pred Value         1.0000   0.9997   1.0000   0.9997   1.0000
+## Neg Pred Value         1.0000   1.0000   0.9999   1.0000   1.0000
+## Prevalence             0.2844   0.1935   0.1745   0.1638   0.1838
+## Detection Rate         0.2844   0.1935   0.1744   0.1638   0.1838
 ## Detection Prevalence   0.2844   0.1935   0.1744   0.1639   0.1838
-## Balanced Accuracy      0.9717   0.9657   0.9610   0.9769   0.9860
+## Balanced Accuracy      1.0000   1.0000   0.9997   1.0000   1.0000
 ```
-(Remember, that's not for the actual final model because I didn't want to rerun it. =D)
 
 The accuracy is now 99.99%. There was only one classe miscategorized out of 19216 observations.  
 
@@ -225,7 +217,7 @@ I'll apply modFitFinal to the testing data set and then use the suggested method
 
 
 ```r
-answers <- predict(modFitFinal,testingUse)
+answers <- predict(modFitFinal,testing)
 
 pml_write_files = function(x){
   n = length(x)

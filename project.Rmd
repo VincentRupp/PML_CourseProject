@@ -19,7 +19,7 @@ library(lattice)
 library(ggplot2)
 library(caret)
 library(randomForest)
-setwd("C:/Coursera/Data_Science/08_Practical_Machine_Learning")
+setwd("C:/Coursera/Data_Science/08_Practical_Machine_Learning/PML_CourseProject")
 set.seed(5)
 opts_chunk$set(echo=TRUE,results="show",fig.align="center",cache=TRUE)
 ```
@@ -48,7 +48,7 @@ new_windows <- training$new_window=='yes'
 keep <- rep(TRUE,dim(training)[2])
 
 #Set keep to FALSE when any of the column conditions are met
-#(There's more efficient code to achieve the result, but this is a one-shot project so cost-benefit favors leaving it as this hodgepodge of omits.)
+#(There's more efficient code to achieve the result, but this has the benefit of being really clear.)
 for (i in 1:length(names(training))) {
   if (sum(is.na(training[,i])) > 5000) {keep[i] <- FALSE}
   if (grepl("^kurtosis|skewness",names(training)[i])==TRUE) {keep[i] <- FALSE}
@@ -86,18 +86,11 @@ confusionMatrix(training$classe,predict(modFit,training))
 ```
 Accuracy is very similar to what was achieved on the 2000-row set. We expect the out-of-sample accuracy to be similar, assuming the test set was chosen randomly from the same population and this model doesn't overfit to the training set.   
 
-Now that I feel good about the method, I'll build a model based on the entire 19,216-row training set. Instead of 5-fold cross-validation, I'll use the bootstrap method and 25 iterations. (25 is the default, so I assume there's some research showing that's an optimal number.)  
-
-**Important Grading Note**  
-Creating the actual model is nearly three hours of runtime. I have knitr set up to cache results, but I stupidly ran the chunk instead of clicking "Knit HTML".  
-
-So the code below to do the three-hour runtime is commented out and I'm using the result from the smaller sample in its place. I already uploaded the automatically-graded files and got 20/20 so it does work and you can see the code for yourself. Hopefully you won't mind this shenanigan.  
-
+Now that I feel good about the method, I'll build a model based on the entire 19,216-row training set. Instead of 5-fold cross-validation, I'll use the bootstrap method and 25 iterations. (25 is the default, so I assume there's some research showing that's an optimal number.) 
 
 ```{r model_wholeset}
-#modFitFinal <- train(classe ~ .,data=trainingUse,method="rf",
-#                trControl=trainControl(method="boot",number=25))
-modFitFinal <- modFit   # =/
+modFitFinal <- train(classe ~ .,data=trainingUse,method="rf",
+                trControl=trainControl(method="boot",number=25))
 ```
 
 That takes almost three hours to run, so here's hoping it's worth it!  
@@ -105,7 +98,6 @@ That takes almost three hours to run, so here's hoping it's worth it!
 ```{r confusion2}
 confusionMatrix(training$classe,predict(modFitFinal,training))
 ```
-(Remember, that's not for the actual final model because I didn't want to rerun it. =D)
 
 The accuracy is now 99.99%. There was only one classe miscategorized out of 19216 observations.  
 
@@ -114,7 +106,7 @@ Let's hope I did this all correctly so that the testing set matches the expected
 I'll apply modFitFinal to the testing data set and then use the suggested method to output 20 text files containing a single character each.  
 
 ```{r testset}
-answers <- predict(modFitFinal,testingUse)
+answers <- predict(modFitFinal,testing)
 
 pml_write_files = function(x){
   n = length(x)
